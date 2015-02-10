@@ -1,0 +1,5 @@
+[package]
+
+name = "cryptopals-rust"
+version = "0.0.1"
+authors = ["Derek Guenther <dguenther9@gmail.com>"]
