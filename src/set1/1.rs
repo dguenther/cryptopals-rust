@@ -71,7 +71,7 @@ fn hex_to_base64(hex_string: &str) -> String {
 		// assuming an even number of hex chars, shift will either be 12 or 4.
 		// if 12, we have 1 significant byte, and if 4 we have 2.
 		let significant_bytes: usize = (2 - (shift / 8)) as usize;
-		output_vec.append(&mut convert_string_group(string_group,  significant_bytes));
+		output_vec.append(&mut convert_string_group(string_group, significant_bytes));
 	}
 
 	// turn the byte vector into a string
