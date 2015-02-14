@@ -18,3 +18,7 @@ path = "src/set1/2.rs"
 [[bin]]
 name = "1-3"
 path = "src/set1/3.rs"
+
+[[bin]]
+name = "1-4"
+path = "src/set1/4.rs"
