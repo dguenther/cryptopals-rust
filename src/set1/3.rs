@@ -106,8 +106,9 @@ static VALUED_CHARS: &'static[&'static str] = &["e", "t", "a", "o", "n"];
 // it completes this challenge
 fn score_text(text: &str) -> usize {
 	let mut score: usize = 0;
+	let lowercase = text.to_ascii_lowercase();
 	for &test_char in VALUED_CHARS {
-		let test_str = text.to_ascii_lowercase().replace(test_char, "");
+		let test_str = lowercase.replace(test_char, "");
 		score += text.len() - test_str.len();
 		debug!("input: {:?}, test: {:?}, score increase: {:?}", text, test_str, text.len() - test_str.len());
 	}
