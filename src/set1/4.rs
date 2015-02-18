@@ -51,13 +51,6 @@ fn main() {
 		Err(_) => panic!("Invalid path")
 	};
 	println!("output string: {:?}", output);
-	/*
-	println!("Set 1, Challenge 4");
-	let ref input = args[1];
-	println!("input: {:?}", input);
-	let output = detect_xor_in_file(input.as_slice());
-	println!("output string: {:?}", output);
-	*/
 }
 
 #[cfg(not(test))]
