@@ -45,11 +45,7 @@ fn main() {
 		None => panic!("No input argument given")
 	};
 	println!("input: {:?}", arg);
-
-	let output = match arg.into_string() {
-		Ok(s) => detect_xor_in_file(s.as_slice()),
-		Err(_) => panic!("Invalid path")
-	};
+	let output = detect_xor_in_file(arg.as_slice());
 	println!("output string: {:?}", output);
 }
 

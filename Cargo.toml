@@ -5,7 +5,7 @@ version = "0.0.3"
 authors = ["Derek Guenther <dguenther9@gmail.com>"]
 
 [dependencies]
-log = "0.2.3"
+log = "0.2.4"
 
 [[bin]]
 name = "1-1"
