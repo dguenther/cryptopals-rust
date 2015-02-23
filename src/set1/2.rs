@@ -39,18 +39,13 @@ fn fixed_hex_xor(first_string: &str, second_string: &str) -> String {
 	let first_lower = first_string.to_ascii_lowercase();
 	let second_lower = second_string.to_ascii_lowercase();
 
-	let mut first_iter = first_lower.as_bytes().iter();
-	let mut second_iter = second_lower.as_bytes().iter();
+	let first_iter = first_lower.as_bytes().iter();
+	let second_iter = second_lower.as_bytes().iter();
 
-	loop {
-	    match (first_iter.next(), second_iter.next()) {
-	        (Some(&x), Some(&y)) => {
-	        	let first_num = convert_hex_char_to_decimal(x);
-				let second_num = convert_hex_char_to_decimal(y);
-	            output_vec.push(convert_decimal_to_hex_char(first_num ^ second_num));
-	        }
-	        _ => { break }
-	    }
+	for (&x, &y) in first_iter.zip(second_iter) {
+		let first_num = convert_hex_char_to_decimal(x);
+		let second_num = convert_hex_char_to_decimal(y);
+        output_vec.push(convert_decimal_to_hex_char(first_num ^ second_num));
 	}
 
 	// turn the byte vector into a string
