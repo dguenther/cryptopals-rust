@@ -12,7 +12,6 @@
 // 746865206b696420646f6e277420706c6179
 
 #![feature(core)]
-#![feature(std_misc)]
 
 #[macro_use]
 extern crate log;

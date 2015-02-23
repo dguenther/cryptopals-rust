@@ -15,6 +15,8 @@
 #![feature(core)]
 #![feature(env)]
 #![feature(io)]
+#![feature(old_io)]
+#![feature(old_path)]
 #![feature(os)]
 #![feature(path)]
 #![feature(std_misc)]

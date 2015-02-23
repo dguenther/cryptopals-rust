@@ -11,7 +11,6 @@
 
 
 #![feature(core)]
-#![feature(std_misc)]
 
 #[macro_use]
 extern crate log;

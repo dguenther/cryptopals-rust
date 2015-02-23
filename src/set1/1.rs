@@ -12,7 +12,6 @@
 
 #![feature(core)]
 #![feature(collections)]
-#![feature(std_misc)]
 
 #[macro_use]
 extern crate log;
