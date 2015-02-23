@@ -9,7 +9,7 @@
 // How? Devise some method for "scoring" a piece of English plaintext.
 // Character frequency is a good metric. Evaluate each output and choose the one with the best score.
 
-// i/o isn't tested right now, so let's silence that warning
+// i/o is undergoing an overhaul, so let's silence that warning
 #![allow(unused_features)]
 
 #![feature(core)]
