@@ -1,7 +1,7 @@
 [package]
 
 name = "cryptopals-rust"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Derek Guenther <dguenther9@gmail.com>"]
 
 [dependencies]
@@ -22,3 +22,7 @@ path = "src/set1/3.rs"
 [[bin]]
 name = "1-4"
 path = "src/set1/4.rs"
+
+[[bin]]
+name = "1-5"
+path = "src/set1/5.rs"
