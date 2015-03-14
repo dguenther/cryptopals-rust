@@ -46,6 +46,7 @@
 // it than can actually break it, and a similar technique breaks something much
 // more important.
 
+
 #![feature(collections)]
 #![feature(core)]
 
@@ -74,6 +75,8 @@ use std::old_io::File;
 
 #[cfg(not(test))]
 fn main() {
+
+	println!("Decoding...");
 
 	if env::args().count() < 2 {
 		panic!("Must pass a file to decode")
@@ -119,48 +122,25 @@ fn break_repeating_key_xor(bytes: Vec<u8>) -> (String, String) {
 	debug!("{:?}", results);
 
 	// loop over the vector of keysizes
-	for &(_, first) in results.iter() {
-		debug!("{:?}", first);
-		let mut output_strings = vec!();
-		let mut best_keys = vec!();
-		for index in 0..first {
-			let filtered_bytes: Vec<_> = bytes.iter().enumerate()
-				.filter(
-					|&(x, _)| {
-						if index > x {
-							return false
-						} else {
-							return (x - index) % first == 0
-						}
-					})
-				.map(|(_, &y)| y)
-				.collect();
+	for &(_, keysize) in results.iter() {
+		debug!("{:?}", keysize);
 
-			let (best_key, string) = score_and_xor(filtered_bytes);
+		// find the best key and the corresponding decoded column for
+		// each byte of the keysize.
+		let (best_keys, decoded_columns) = find_best_key_and_columns(keysize, &bytes);
 
-			// if we get an empty string back, we don't have any valid text,
-			// so throw out this keysize
-			if string == "" {
-				best_keys = vec!();
-				output_strings = vec!();
-				break;
-			}
-
-			best_keys.push(best_key);
-			output_strings.push(string);
-		}
 
 		// if we've got something in the output string list,
-		// we made it all the way through, so merge the strings
-
-		if output_strings.len() != 0 {
+		// we might have figured out the key, so merge the strings
+		// into something readable
+		if decoded_columns.len() != 0 {
 			let mut output_string = String::new();
-			let string_len = output_strings[0].len();
+			let string_len = decoded_columns[0].len();
 			for index in 0..string_len {
-				for str_index in 0..output_strings.len() {
+				for str_index in 0..decoded_columns.len() {
 
-					if index < output_strings[str_index].len() {
-						output_string.push(output_strings[str_index].char_at(index));
+					if index < decoded_columns[str_index].len() {
+						output_string.push(decoded_columns[str_index].char_at(index));
 					}
 				}
 			}
@@ -173,6 +153,38 @@ fn break_repeating_key_xor(bytes: Vec<u8>) -> (String, String) {
 		}
 	}
 	("".to_string(), "".to_string())
+}
+
+fn find_best_key_and_columns(keysize: usize, bytes: &Vec<u8>) -> (Vec<u8>, Vec<String>) {
+	let mut decoded_columns = vec!();
+	let mut best_keys = vec!();
+	for index in 0..keysize {
+		let filtered_bytes: Vec<_> = bytes.iter().enumerate()
+			.filter(
+				|&(x, _)| {
+					if index > x {
+						return false
+					} else {
+						return (x - index) % keysize == 0
+					}
+				})
+			.map(|(_, &y)| y)
+			.collect();
+
+		let (best_key, string) = score_and_xor(filtered_bytes);
+
+		// if we get an empty string back, we don't have any valid text,
+		// so throw out this keysize
+		if string == "" {
+			best_keys = vec!();
+			decoded_columns = vec!();
+			break;
+		}
+
+		best_keys.push(best_key);
+		decoded_columns.push(string);
+	}
+	(best_keys, decoded_columns)
 }
 
 fn rank_keylengths(bytes: &Vec<u8>) -> Vec<(f32, usize)> {
