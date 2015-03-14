@@ -49,7 +49,7 @@
 #![feature(collections)]
 #![feature(core)]
 
-#![cfg(not(test))]
+#![allow(unused_features)]
 #![feature(env)]
 #![feature(old_io)]
 #![feature(old_path)]
@@ -113,24 +113,9 @@ fn base64_lines_to_hex(lines: Vec<String>) -> String {
 }
 
 fn break_repeating_key_xor(bytes: Vec<u8>) -> (String, String) {
-	let mut results: Vec<(f32, usize)> = Vec::new();
+
 	debug!("{:?}", bytes.len());
-	for keysize in 2..cmp::min(40, (bytes.len() / 3)) {
-		// take first keysize of bytes
-		let first = &bytes[0..keysize];
-		// take second keysize of bytes
-		let second = &bytes[keysize..keysize*2];
-
-		// take third keysize of bytes
-		let third = &bytes[keysize*2..keysize*3];
-
-		let distance = (hamming_distance(first, second) + hamming_distance(second, third) + hamming_distance(first, third)) / 3;
-		let normalized = distance as f32 / keysize as f32;
-		results.push((normalized, keysize));
-	}
-
-	// sort the vector from least to greatest distance.
-	results.sort_by(|&(x1, _), &(x2, _)| x1.partial_cmp(&x2).unwrap_or(Ordering::Equal));
+	let results = rank_keylengths(&bytes);
 	debug!("{:?}", results);
 
 	// loop over the vector of keysizes
@@ -181,13 +166,34 @@ fn break_repeating_key_xor(bytes: Vec<u8>) -> (String, String) {
 			}
 
 			let key = match str::from_utf8(best_keys.as_slice()) {
-			    Ok(v) => v,
-			    Err(_) => { panic!("Test") }
+			    Ok(v) => v.to_string(),
+			    Err(_) => { format!("{:?}", best_keys) }
 			};
 			return (key.to_string(), output_string);
 		}
 	}
 	("".to_string(), "".to_string())
+}
+
+fn rank_keylengths(bytes: &Vec<u8>) -> Vec<(f32, usize)> {
+	let mut results: Vec<(f32, usize)> = Vec::new();
+	for keysize in 2..cmp::min(40, (bytes.len() / 3)) {
+		// take first keysize of bytes
+		let first = &bytes[0..keysize];
+		// take second keysize of bytes
+		let second = &bytes[keysize..keysize*2];
+		// take third keysize of bytes
+		let third = &bytes[keysize*2..keysize*3];
+		// average the hamming distance between them
+		let distance = (hamming_distance(first, second) + hamming_distance(second, third) + hamming_distance(first, third)) / 3;
+		// normalize the average distance by the keysize
+		let normalized = distance as f32 / keysize as f32;
+		results.push((normalized, keysize));
+	}
+
+	// sort the vector from least to greatest average distance.
+	results.sort_by(|&(x1, _), &(x2, _)| x1.partial_cmp(&x2).unwrap_or(Ordering::Equal));
+	results
 }
 
 fn hamming_distance(input1: &[u8], input2: &[u8]) -> usize {
@@ -397,7 +403,7 @@ mod set1challenge6 {
 	fn decode() {
 		// taken from https://picoctf.com/crypto_mats/index.html
 		let input = vec!("mIdwJYSyjmxxt7uZfnGVv4F6OIS/mDU4ifqffTTHvIp2Jceug3Qly/qeeyWOtstzMI6oh2xxlb+IcD+TtpI5cY6uy2IwlPqbZz6Fu4l5KMeYmXwlhrOFMiLHuI5mJcexjmUlx6mOdiOCrsU1BY+zmDU4lPqJcDKGr5hwcYi8y2E5gvqYcDKVv4hscZSvmWc+krSPfD+A+op5Pceug3BxhrmffCeOroJwIse5imcjjr+PNT6J+oNwI4L6j2AjjrSMNQaIqIdxcbC7mTUFkLXLYjCU+oRzcZGzn3Q9x7OGZT6Vrop7MoL6n3pxiK+ZNT+GroJ6P4a2y2Y0hK+ZfCWe+op7Ncevh2E4irufcHGRs4hhPpWjxQ==".to_string());
-		let (key, output) = super::break_repeating_key_xor_in_lines(input);
+		let (_, output) = super::break_repeating_key_xor_in_lines(input);
 		assert_eq!(output, "Bletchey Park rejoices in the fact that, until fairly recently, it was probably Britain's best kept secret. This is because of the secrecy surrounding all the activities carried on here during World War Two was of vital importance to our national security and ultimate victory.");
 	}
 }
