@@ -9,14 +9,10 @@
 // How? Devise some method for "scoring" a piece of English plaintext.
 // Character frequency is a good metric. Evaluate each output and choose the one with the best score.
 
-
-#![feature(core)]
-
 #[macro_use]
 extern crate log;
 
 use std::ascii::AsciiExt;
-use std::num::Int;
 use std::str;
 
 #[cfg(not(test))]
@@ -50,7 +46,7 @@ fn decode_single_byte_xor(input: &str) -> String {
 	let mut current_byte = 0;
 
 	for &x in bytes.iter() {
-		current_byte += convert_hex_char_to_decimal(x) * 16.pow(tick);
+		current_byte += convert_hex_char_to_decimal(x) * 16u8.pow(tick);
 		tick = tick ^ 1;
 		if tick == 1 {
 			decimal_values.push(current_byte);
@@ -70,7 +66,7 @@ fn decode_single_byte_xor(input: &str) -> String {
 		}
 
 		// turn the byte vector into a string
-		match str::from_utf8(decoded_values.as_slice()) {
+		match str::from_utf8(&decoded_values) {
 		    Ok(v) => {
 		        let score = score_text(v);
 		        if score > best_string_score {
