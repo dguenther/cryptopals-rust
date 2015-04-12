@@ -11,28 +11,25 @@
 // Easiest way: use OpenSSL::Cipher and give it AES-128-ECB as the cipher.
 
 
-#![allow(unused_features)]
-
-#![feature(core)]
-#![feature(env)]
-#![feature(old_io)]
-#![feature(old_path)]
+#![feature(step_by)]
 
 #[macro_use]
 extern crate log;
 extern crate openssl;
 
 use std::ascii::AsciiExt;
-use std::iter::range_step;
-use std::num::Int;
 use std::str;
 
 #[cfg(not(test))]
 use std::env;
 #[cfg(not(test))]
-use std::old_io::BufferedReader;
+use std::io::BufReader;
 #[cfg(not(test))]
-use std::old_io::File;
+use std::fs::File;
+#[cfg(not(test))]
+use std::path::Path;
+#[cfg(not(test))]
+use std::io::prelude::*;
 
 #[cfg(not(test))]
 fn main() {
@@ -55,7 +52,7 @@ fn main() {
 #[cfg(not(test))]
 fn decrypt_aes_ecb_128_file(key: &str, path: &str) -> String {
 	let path = Path::new(path);
-	let mut file = BufferedReader::new(File::open(&path));
+	let file = BufReader::new(File::open(&path).unwrap());
 	let lines: Vec<_> = file.lines()
 		.map(|x| x.unwrap())
 		.collect();
@@ -84,7 +81,7 @@ fn convert_hex_string_to_decimal_pairs(string: &String) -> Vec<u8> {
 	let mut current_byte = 0;
 
 	for &x in bytes.iter() {
-		current_byte += convert_hex_char_to_decimal(x) * 16.pow(tick);
+		current_byte += convert_hex_char_to_decimal(x) * 16u8.pow(tick);
 		tick = tick ^ 1;
 		if tick == 1 {
 			decimal_values.push(current_byte);
@@ -118,7 +115,7 @@ fn base64_lines_to_hex(lines: &Vec<String>) -> String {
 fn base64_to_hex(input: &str) -> String {
 	let bytes = input.as_bytes();
 	let mut nums = vec!();
-	for index in range_step(0, bytes.len(), 4) {
+	for index in (0..bytes.len()).step_by(4) {
 		let slice = &bytes[index..index+4];
 		debug!("{:?}", index);
 		let byte0 = base64_ascii_to_index(slice[0]);
@@ -152,7 +149,7 @@ fn base64_to_hex(input: &str) -> String {
 
 	let hex: Vec<u8> = nums.iter().map(|&x| convert_num_to_hex_char(x)).collect();
 
-	match str::from_utf8(hex.as_slice()) {
+	match str::from_utf8(&hex) {
 	    Ok(v) => {
 	        debug!("output string: {:?}", v);
 	        return v.to_string();
