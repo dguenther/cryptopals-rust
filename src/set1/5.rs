@@ -18,8 +18,6 @@
 // Encrypt your mail. Encrypt your password file. Your .sig file.
 // Get a feel for it. I promise, we aren't wasting your time with this.
 
-#![feature(core)]
-
 #[macro_use]
 extern crate log;
 
@@ -57,7 +55,7 @@ fn convert_decimals_to_hex_string(decimals: Vec<u8>) -> String {
 	}
 
 	// turn the byte vector into a string
-	match str::from_utf8(converted_string.as_slice()) {
+	match str::from_utf8(&converted_string) {
 	    Ok(v) => {
 	        return v.to_string();
 	    }
