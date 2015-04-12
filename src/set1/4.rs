@@ -9,32 +9,22 @@
 // How? Devise some method for "scoring" a piece of English plaintext.
 // Character frequency is a good metric. Evaluate each output and choose the one with the best score.
 
-// i/o is undergoing an overhaul, so let's silence that warning
-#![allow(unused_features)]
-
-#![feature(core)]
-#![feature(env)]
-#![feature(io)]
-#![feature(old_io)]
-#![feature(old_path)]
-#![feature(os)]
-#![feature(path)]
-#![feature(std_misc)]
-
 #[macro_use]
 extern crate log;
 
 use std::ascii::AsciiExt;
-use std::num::Int;
-
 use std::str;
 
 #[cfg(not(test))]
 use std::env;
 #[cfg(not(test))]
-use std::old_io::BufferedReader;
+use std::io::BufReader;
 #[cfg(not(test))]
-use std::old_io::File;
+use std::fs::File;
+#[cfg(not(test))]
+use std::path::Path;
+#[cfg(not(test))]
+use std::io::prelude::*;
 
 #[cfg(not(test))]
 fn main() {
@@ -47,18 +37,18 @@ fn main() {
 		None => panic!("No input argument given")
 	};
 	println!("input: {:?}", arg);
-	let output = detect_xor_in_file(arg.as_slice());
+	let output = detect_xor_in_file(&arg);
 	println!("output string: {:?}", output);
 }
 
 #[cfg(not(test))]
 fn detect_xor_in_file(path: &str) -> String {
 	let path = Path::new(path);
-	let mut file = BufferedReader::new(File::open(&path));
+	let f = File::open(&path).unwrap();
+	let file = BufReader::new(f);
 	let lines = file.lines().map(|x| x.unwrap()).collect();
 
 	detect_xor_in_lines(lines)
-
 }
 
 fn detect_xor_in_lines(lines: Vec<String>) -> String {
@@ -93,7 +83,7 @@ fn score_and_xor(decimal_values: Vec<u8>) -> (usize, String) {
 		}
 
 		// turn the byte vector into a string
-		match str::from_utf8(decoded_values.as_slice()) {
+		match str::from_utf8(&decoded_values) {
 		    Ok(v) => {
 		        let score = score_text(v);
 		        if score > best_string_score {
@@ -116,7 +106,7 @@ fn convert_hex_string_to_decimal_pairs(string: &String) -> Vec<u8> {
 	let mut current_byte = 0;
 
 	for &x in bytes.iter() {
-		current_byte += convert_hex_char_to_decimal(x) * 16.pow(tick);
+		current_byte += convert_hex_char_to_decimal(x) * 16u8.pow(tick);
 		tick = tick ^ 1;
 		if tick == 1 {
 			decimal_values.push(current_byte);
