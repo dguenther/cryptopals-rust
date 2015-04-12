@@ -11,8 +11,6 @@
 //
 // 746865206b696420646f6e277420706c6179
 
-#![feature(core)]
-
 #[macro_use]
 extern crate log;
 
@@ -49,7 +47,7 @@ fn fixed_hex_xor(first_string: &str, second_string: &str) -> String {
 	}
 
 	// turn the byte vector into a string
-	match str::from_utf8(output_vec.as_slice()) {
+	match str::from_utf8(&output_vec) {
 	    Ok(v) => {
 	        debug!("output string: {:?}", v);
 	        return v.to_string();
