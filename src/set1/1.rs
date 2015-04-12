@@ -10,14 +10,12 @@
 // Cryptopals Rule
 // Always operate on raw bytes, never on encoded strings. Only use hex and base64 for pretty-printing.
 
-#![feature(core)]
 #![feature(collections)]
 
 #[macro_use]
 extern crate log;
 
 use std::ascii::AsciiExt;
-use std::num::Int;
 use std::str;
 
 #[cfg(not(test))]
@@ -74,7 +72,7 @@ fn hex_to_base64(hex_string: &str) -> String {
 	}
 
 	// turn the byte vector into a string
-	match str::from_utf8(output_vec.as_slice()) {
+	match str::from_utf8(&output_vec) {
 	    Ok(v) => {
 	        debug!("output string: {:?}", v);
 	        return v.to_string();
@@ -88,8 +86,8 @@ fn hex_to_base64(hex_string: &str) -> String {
 fn convert_string_group(group: usize, significant_bytes: usize) -> Vec<u8> {
 	let mut converted_vec = vec!();
 	let octets = vec!(
-		((group & (63 * 64.pow(3))) >> 18) as u8,
-		((group & (63 * 64.pow(2))) >> 12) as u8,
+		((group & (63 * 64usize.pow(3))) >> 18) as u8,
+		((group & (63 * 64usize.pow(2))) >> 12) as u8,
 		((group & (63 * 64)) >> 6) as u8,
 		(group & 63) as u8,
 	);
