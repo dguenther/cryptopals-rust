@@ -13,9 +13,6 @@
 extern crate log;
 extern crate cryptopalslib;
 
-use std::ascii::AsciiExt;
-use std::str;
-
 #[cfg(not(test))]
 use std::env;
 #[cfg(not(test))]
@@ -58,69 +55,14 @@ fn detect_xor_in_lines(lines: Vec<String>) -> String {
 
 	for line in lines.iter() {
 	    let pairs = cryptopalslib::convert::hex_string_to_decimal_pairs(line);
-	    match score_and_xor(pairs) {
-	    	(score, string) => {
-	    		if score > best_string_score {
-	    			best_string_score = score;
-	    			best_string = string;
-	    		}
-	    	}
-	    };
+	    let (score, _, string) = cryptopalslib::xor::score_and_xor(pairs);
+	    if score > best_string_score {
+			best_string_score = score;
+			best_string = string;
+	    }
 	}
 
 	best_string
-}
-
-fn score_and_xor(decimal_values: Vec<u8>) -> (usize, String) {
-	let mut best_string = String::new();
-	let mut best_string_score = 0;
-
-	// starting with 0, test the current string just in case
-	for test_val in 0..255 {
-		debug!("{:?}", test_val);
-		let mut decoded_values = vec!();
-		for &x in decimal_values.iter() {
-			decoded_values.push(x ^ test_val);
-		}
-
-		// turn the byte vector into a string
-		match str::from_utf8(&decoded_values) {
-		    Ok(v) => {
-		        let score = score_text(v);
-		        if score > best_string_score {
-		        	best_string = v.to_string();
-		        	best_string_score = score;
-		        }
-		    }
-		    Err(_) => { }
-		}
-	}
-	(best_string_score, best_string)
-}
-
-// these are strings so that they can be used in StrExt.replace.
-// this seemed easier than converting chars to strings every time.
-// characters are taken from relative frequency of letters in the english language:
-// https://en.wikipedia.org/wiki/Letter_frequency
-static VALUED_CHARS: &'static[&'static str] = &["e", "t", "a", "o", "n"];
-
-// this scoring function is extremely simple/fragile. that said,
-// it completes this challenge
-fn score_text(text: &str) -> usize {
-	let mut score: usize = 0;
-	// if we have \u{0} in the output, the text is probably the opposite
-	// of what it needs to be, so throw this string out.
-	// (the xor-opposite of \u{0} is a space)
-	if text.len() != text.replace("\u{0}", "").len() {
-		return 0;
-	}
-	let lowercase = text.to_ascii_lowercase();
-	for &test_char in VALUED_CHARS {
-		let test_str = lowercase.replace(test_char, "");
-		score += text.len() - test_str.len();
-		debug!("input: {:?}, test: {:?}, score increase: {:?}", text, test_str, text.len() - test_str.len());
-	}
-	return score;
 }
 
 #[cfg(test)]

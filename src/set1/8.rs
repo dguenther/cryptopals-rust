@@ -9,7 +9,6 @@
 // deterministic; the same 16 byte plaintext block will always
 // produce the same 16 byte ciphertext.
 
-
 use std::collections::HashSet;
 
 #[cfg(not(test))]

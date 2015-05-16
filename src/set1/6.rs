@@ -47,14 +47,10 @@
 // more important.
 
 
-#![feature(collections)]
-
 #[macro_use]
 extern crate log;
 extern crate cryptopalslib;
 
-use std::ascii::AsciiExt;
-use std::collections::BitVec;
 use std::cmp;
 use std::cmp::Ordering;
 use std::str;
@@ -100,17 +96,9 @@ fn break_repeating_key_xor_in_file(path: &str) -> (String, String) {
 }
 
 fn break_repeating_key_xor_in_lines(lines: Vec<String>) -> (String, String) {
-	let input = base64_lines_to_hex(lines);
+	let input = cryptopalslib::convert::base64_lines_to_hex(&lines);
 	let nums = cryptopalslib::convert::hex_string_to_decimal_pairs(&input);
 	break_repeating_key_xor(nums)
-}
-
-fn base64_lines_to_hex(lines: Vec<String>) -> String {
-	let mut output = String::new();
-	for line in lines {
-		output.push_str(&cryptopalslib::convert::base64_to_hex(&line.trim()));
-	}
-	output
 }
 
 fn break_repeating_key_xor(bytes: Vec<u8>) -> (String, String) {
@@ -169,7 +157,7 @@ fn find_best_key_and_columns(keysize: usize, bytes: &Vec<u8>) -> (Vec<u8>, Vec<S
 			.map(|(_, &y)| y)
 			.collect();
 
-		let (best_key, string) = score_and_xor(filtered_bytes);
+		let (_, best_key, string) = cryptopalslib::xor::score_and_xor(filtered_bytes);
 
 		// if we get an empty string back, we don't have any valid text,
 		// so throw out this keysize
@@ -195,7 +183,7 @@ fn rank_keylengths(bytes: &Vec<u8>) -> Vec<(f32, usize)> {
 		// take third keysize of bytes
 		let third = &bytes[keysize*2..keysize*3];
 		// average the hamming distance between them
-		let distance = (hamming_distance(first, second) + hamming_distance(second, third) + hamming_distance(first, third)) / 3;
+		let distance = (cryptopalslib::score::hamming_distance(first, second) + cryptopalslib::score::hamming_distance(second, third) + cryptopalslib::score::hamming_distance(first, third)) / 3;
 		// normalize the average distance by the keysize
 		let normalized = distance as f32 / keysize as f32;
 		results.push((normalized, keysize));
@@ -206,86 +194,8 @@ fn rank_keylengths(bytes: &Vec<u8>) -> Vec<(f32, usize)> {
 	results
 }
 
-fn hamming_distance(input1: &[u8], input2: &[u8]) -> usize {
-	let first_iter = input1.iter();
-	let second_iter = input2.iter();
-
-	let mut output: usize = 0;
-
-	for (x, y) in first_iter.zip(second_iter) {
-		let bv = BitVec::from_bytes(&[x^y]);
-		output += bv.iter().filter(|x| *x).count() as usize;
-	}
-	output
-}
-
-fn score_and_xor(decimal_values: Vec<u8>) -> (u8, String) {
-	let mut best_string = String::new();
-	let mut best_string_score = 0;
-	let mut best_string_value = 0;
-
-	// starting with 0, test the current string just in case
-	for test_val in 0..255 {
-		debug!("{:?}", test_val);
-
-		let decoded_values: Vec<_> = decimal_values.iter().map(|x| x ^ test_val).collect();
-
-		// turn the byte vector into a string
-		match str::from_utf8(&decoded_values) {
-		    Ok(v) => {
-		        let score = score_text(v);
-		        if score > best_string_score {
-		        	best_string = v.to_string();
-		        	best_string_score = score;
-		        	best_string_value = test_val;
-		        }
-		    }
-		    Err(_) => { }
-		}
-	}
-
-	(best_string_value, best_string)
-}
-
-// these are strings so that they can be used in StrExt.replace.
-// this seemed easier than converting chars to strings every time.
-// characters are taken from relative frequency of letters in the english language:
-// https://en.wikipedia.org/wiki/Letter_frequency
-static VALUED_CHARS: &'static[&'static str] = &["e", "t", "a", "o", "n"];
-
-static FAILED_CHARS: &'static[&'static str] = &["\u{0}", "\u{1}", "\u{2}", "\u{3}", "\u{4}", "\u{5}", "\u{6}", "\u{7}", "\u{8}", "\u{9}", "\u{12}", "\u{c}", "\u{7f}", "\u{1d}"];
-
-// this scoring function is extremely simple/fragile. that said,
-// it completes this challenge
-fn score_text(text: &str) -> usize {
-	let mut score: usize = 0;
-	// if we have any failed characters in the text,
-	// it's probably not text we want, so return 0
-
-	for &test_char in FAILED_CHARS {
-		if text.contains(test_char) {
-			return 0;
-		}
-	}
-
-
-	let lowercase = text.to_ascii_lowercase();
-	for &test_char in VALUED_CHARS {
-		let test_str = lowercase.replace(test_char, "");
-		score += text.len() - test_str.len();
-		debug!("input: {:?}, test: {:?}, score increase: {:?}", text, test_str, text.len() - test_str.len());
-	}
-	return score;
-}
-
 #[cfg(test)]
 mod set1challenge6 {
-
-	#[test]
-	fn hamming_distance() {
-		let output = super::hamming_distance("this is a test".as_bytes(), "wokka wokka!!!".as_bytes());
-		assert_eq!(output, 37);
-	}
 
 	#[test]
 	fn decode() {

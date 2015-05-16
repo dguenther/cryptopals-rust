@@ -10,7 +10,6 @@
 
 // Easiest way: use OpenSSL::Cipher and give it AES-128-ECB as the cipher.
 
-
 #[macro_use]
 extern crate log;
 extern crate openssl;
@@ -59,7 +58,7 @@ fn decrypt_aes_ecb_128_file(key: &str, path: &str) -> String {
 }
 
 fn decrypt_base64_aes_ecb_128(key: &str, lines: Vec<String>) -> String {
-	let base64_decoded = base64_lines_to_hex(&lines);
+	let base64_decoded = cryptopalslib::convert::base64_lines_to_hex(&lines);
 	let nums = cryptopalslib::convert::hex_string_to_decimal_pairs(&base64_decoded);
 
 	let t = openssl::crypto::symm::decrypt(openssl::crypto::symm::Type::AES_128_ECB, key.as_bytes(), vec!(), &nums);
@@ -68,16 +67,6 @@ fn decrypt_base64_aes_ecb_128(key: &str, lines: Vec<String>) -> String {
 		Ok(s) => return s.to_string(),
 		Err(_) => panic!("Result couldn't be converted to u8")
 	}
-}
-
-// BASE 64 TO HEX
-
-fn base64_lines_to_hex(lines: &Vec<String>) -> String {
-	let mut output = String::new();
-	for line in lines {
-		output.push_str(&cryptopalslib::convert::base64_to_hex(&line.trim()));
-	}
-	output
 }
 
 #[cfg(test)]

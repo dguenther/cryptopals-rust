@@ -106,6 +106,14 @@ pub fn base64_to_hex(input: &str) -> String {
 
 }
 
+pub fn base64_lines_to_hex(lines: &Vec<String>) -> String {
+	let mut output = String::new();
+	for line in lines {
+		output.push_str(&base64_to_hex(&line.trim()));
+	}
+	output
+}
+
 fn base64_ascii_to_index(ascii: u8) -> Option<u8> {
 	match ascii {
 		65...90 => Some(ascii - 65), // uppercase
