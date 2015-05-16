@@ -11,6 +11,7 @@
 
 #[macro_use]
 extern crate log;
+extern crate cryptopalslib;
 
 use std::ascii::AsciiExt;
 use std::str;
@@ -46,7 +47,7 @@ fn decode_single_byte_xor(input: &str) -> String {
 	let mut current_byte = 0;
 
 	for &x in bytes.iter() {
-		current_byte += convert_hex_char_to_decimal(x) * 16u8.pow(tick);
+		current_byte += cryptopalslib::convert::hex_char_to_decimal(x) * 16u8.pow(tick);
 		tick = tick ^ 1;
 		if tick == 1 {
 			decimal_values.push(current_byte);
@@ -79,16 +80,6 @@ fn decode_single_byte_xor(input: &str) -> String {
 	}
 
 	best_string
-}
-
-fn convert_hex_char_to_decimal(character: u8) -> u8 {
-	// if x is in the ascii range for numbers, subtract 48,
-	// which is '0' in ascii. Otherwise, it should be a lowercase letter.
-	// 'a' is 97, so subtract 87.
-	match character < 58 {
-		true => character - 48,
-		false => character - 87
-	}
 }
 
 // these are strings so that they can be used in StrExt.replace.

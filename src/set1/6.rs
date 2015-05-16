@@ -48,10 +48,10 @@
 
 
 #![feature(collections)]
-#![feature(step_by)]
 
 #[macro_use]
 extern crate log;
+extern crate cryptopalslib;
 
 use std::ascii::AsciiExt;
 use std::collections::BitVec;
@@ -101,14 +101,14 @@ fn break_repeating_key_xor_in_file(path: &str) -> (String, String) {
 
 fn break_repeating_key_xor_in_lines(lines: Vec<String>) -> (String, String) {
 	let input = base64_lines_to_hex(lines);
-	let nums = convert_hex_string_to_decimal_pairs(&input);
+	let nums = cryptopalslib::convert::hex_string_to_decimal_pairs(&input);
 	break_repeating_key_xor(nums)
 }
 
 fn base64_lines_to_hex(lines: Vec<String>) -> String {
 	let mut output = String::new();
 	for line in lines {
-		output.push_str(&base64_to_hex(&line.trim()));
+		output.push_str(&cryptopalslib::convert::base64_to_hex(&line.trim()));
 	}
 	output
 }
@@ -247,36 +247,6 @@ fn score_and_xor(decimal_values: Vec<u8>) -> (u8, String) {
 	(best_string_value, best_string)
 }
 
-fn convert_hex_string_to_decimal_pairs(string: &String) -> Vec<u8> {
-	let string_lower = string.to_ascii_lowercase();
-	let bytes = string_lower.as_bytes();
-
-	let mut decimal_values = vec!();
-	let mut tick = 1;
-	let mut current_byte = 0;
-
-	for &x in bytes.iter() {
-		current_byte += convert_hex_char_to_decimal(x) * 16u8.pow(tick);
-		tick = tick ^ 1;
-		if tick == 1 {
-			decimal_values.push(current_byte);
-			current_byte = 0;
-		}
-	}
-
-	decimal_values
-}
-
-fn convert_hex_char_to_decimal(character: u8) -> u8 {
-	// if x is in the ascii range for numbers, subtract 48,
-	// which is '0' in ascii. Otherwise, it should be a lowercase letter.
-	// 'a' is 97, so subtract 87.
-	match character < 58 {
-		true => character - 48,
-		false => character - 87
-	}
-}
-
 // these are strings so that they can be used in StrExt.replace.
 // this seemed easier than converting chars to strings every time.
 // characters are taken from relative frequency of letters in the english language:
@@ -308,80 +278,6 @@ fn score_text(text: &str) -> usize {
 	return score;
 }
 
-// BASE 64 TO HEX
-
-fn base64_to_hex(input: &str) -> String {
-	let bytes = input.as_bytes();
-	let mut nums = vec!();
-	for index in (0..bytes.len()).step_by(4) {
-		let slice = &bytes[index..index+4];
-
-		let byte0 = base64_ascii_to_index(slice[0]);
-		let byte1 = base64_ascii_to_index(slice[1]);
-		let byte2 = base64_ascii_to_index(slice[2]);
-		let byte3 = base64_ascii_to_index(slice[3]);
-
-		match (byte0, byte1, byte2, byte3) {
-			(Some(b0), Some(b1), Some(b2), Some(b3)) => {
-				nums.push(b0 >> 2);
-				nums.push(((b0 & 3) << 2) + (b1 >> 4));
-				nums.push(b1 & 15);
-				nums.push((b2 & 60) >> 2);
-				nums.push(((b2 & 3) << 2) + (b3 >> 4));
-				nums.push(b3 & 15);
-			},
-			(Some(b0), Some(b1), Some(b2), None) => {
-				nums.push(b0 >> 2);
-				nums.push(((b0 & 3) << 2) + (b1 >> 4));
-				nums.push(b1 & 15);
-				nums.push((b2 & 60) >> 2);
-			},
-			(Some(b0), Some(b1), None, None) => {
-				nums.push(b0 >> 2);
-				nums.push(((b0 & 3) << 2) + (b1 >> 4));
-			},
-			_ => panic!("Only the last two bytes may be unused")
-		};
-
-	}
-
-	let hex: Vec<u8> = nums.iter().map(|&x| convert_num_to_hex_char(x)).collect();
-
-	match str::from_utf8(&hex) {
-	    Ok(v) => {
-	        debug!("output string: {:?}", v);
-	        return v.to_string();
-	    }
-	    Err(e) => {
-	        panic!("error parsing string: {:?}", e);
-    	}
-	}
-
-}
-
-fn base64_ascii_to_index(ascii: u8) -> Option<u8> {
-	match ascii {
-		65...90 => Some(ascii - 65), // uppercase
-		97...122 => Some(ascii - 71), // lowercase
-		48...57 => Some(ascii + 4), // numbers
-		43 => Some(ascii + 19), // +
-		47 => Some(ascii + 16), // /
-		// equals means empty byte. need some way of
-		// differentiating from 'A'.
-		61 => None, // =
-
-		_ => panic!("Not in base64 range")
-	}
-}
-
-fn convert_num_to_hex_char(num: u8) -> u8 {
-	match num {
-		0...9 => num + 48,
-		10...15 => num + 87,
-		_ => panic!("Not a valid hex char")
-	}
-}
-
 #[cfg(test)]
 mod set1challenge6 {
 
@@ -389,24 +285,6 @@ mod set1challenge6 {
 	fn hamming_distance() {
 		let output = super::hamming_distance("this is a test".as_bytes(), "wokka wokka!!!".as_bytes());
 		assert_eq!(output, 37);
-	}
-
-	#[test]
-	fn base64_one_equals() {
-		let output = super::base64_to_hex("oSNFZ4k=");
-		assert_eq!(output, "a123456789");
-	}
-
-	#[test]
-	fn base64_two_equals() {
-		let output = super::base64_to_hex("EjRWeJq83g==");
-		assert_eq!(output, "123456789abcde");
-	}
-
-	#[test]
-	fn base64_man() {
-		let output = super::base64_to_hex("TWFu");
-		assert_eq!(output, "4d616e");
 	}
 
 	#[test]

@@ -13,6 +13,7 @@
 
 #[macro_use]
 extern crate log;
+extern crate cryptopalslib;
 
 use std::ascii::AsciiExt;
 use std::str;
@@ -41,9 +42,9 @@ fn fixed_hex_xor(first_string: &str, second_string: &str) -> String {
 	let second_iter = second_lower.as_bytes().iter();
 
 	for (&x, &y) in first_iter.zip(second_iter) {
-		let first_num = convert_hex_char_to_decimal(x);
-		let second_num = convert_hex_char_to_decimal(y);
-        output_vec.push(convert_decimal_to_hex_char(first_num ^ second_num));
+		let first_num = cryptopalslib::convert::hex_char_to_decimal(x);
+		let second_num = cryptopalslib::convert::hex_char_to_decimal(y);
+        output_vec.push(cryptopalslib::convert::decimal_to_hex_char(first_num ^ second_num));
 	}
 
 	// turn the byte vector into a string
@@ -55,24 +56,6 @@ fn fixed_hex_xor(first_string: &str, second_string: &str) -> String {
 	    Err(e) => {
 	        panic!("error parsing string: {:?}", e);
     	}
-	}
-}
-
-fn convert_hex_char_to_decimal(character: u8) -> u8 {
-	// if x is in the ascii range for numbers, subtract 48,
-	// which is '0' in ascii. Otherwise, it should be a lowercase letter.
-	// 'a' is 97, so subtract 87.
-	match character < 58 {
-		true => character - 48,
-		false => character - 87
-	}
-}
-
-fn convert_decimal_to_hex_char(decimal: u8) -> u8 {
-	match decimal {
-		0...9 => decimal + 48,
-		10...15 => decimal + 87,
-		_ => panic!("Not a valid hex char")
 	}
 }
 

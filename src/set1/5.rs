@@ -20,8 +20,7 @@
 
 #[macro_use]
 extern crate log;
-
-use std::str;
+extern crate cryptopalslib;
 
 #[cfg(not(test))]
 fn main() {
@@ -39,36 +38,7 @@ fn encrypt_repeating_byte_xor(input: &str, key: &str) -> String {
 	for byte in input_iter {
 		output.push(byte ^ key_iter.next().unwrap());
 	}
-	convert_decimals_to_hex_string( output )
-}
-
-fn convert_decimals_to_hex_string(decimals: Vec<u8>) -> String {
-	let mut converted_string: Vec<u8> = vec!();
-	for num in decimals {
-		if num < 16 {
-			converted_string.push(convert_decimal_to_hex_char(0));
-			converted_string.push(convert_decimal_to_hex_char(num));
-		} else {
-			converted_string.push(convert_decimal_to_hex_char(num / 16));
-			converted_string.push(convert_decimal_to_hex_char(num % 16));
-		}
-	}
-
-	// turn the byte vector into a string
-	match str::from_utf8(&converted_string) {
-	    Ok(v) => {
-	        return v.to_string();
-	    }
-	    Err(_) => { panic!("Error converting numbers to string") }
-	}
-}
-
-fn convert_decimal_to_hex_char(decimal: u8) -> u8 {
-	match decimal {
-		0...9 => decimal + 48,
-		10...15 => decimal + 87,
-		_ => panic!("Not a valid hex char")
-	}
+	cryptopalslib::convert::decimals_to_hex_string(output)
 }
 
 #[cfg(test)]

@@ -11,6 +11,7 @@
 
 #[macro_use]
 extern crate log;
+extern crate cryptopalslib;
 
 use std::ascii::AsciiExt;
 use std::str;
@@ -56,7 +57,7 @@ fn detect_xor_in_lines(lines: Vec<String>) -> String {
 	let mut best_string = String::new();
 
 	for line in lines.iter() {
-	    let pairs = convert_hex_string_to_decimal_pairs(line);
+	    let pairs = cryptopalslib::convert::hex_string_to_decimal_pairs(line);
 	    match score_and_xor(pairs) {
 	    	(score, string) => {
 	    		if score > best_string_score {
@@ -95,36 +96,6 @@ fn score_and_xor(decimal_values: Vec<u8>) -> (usize, String) {
 		}
 	}
 	(best_string_score, best_string)
-}
-
-fn convert_hex_string_to_decimal_pairs(string: &String) -> Vec<u8> {
-	let string_lower = string.to_ascii_lowercase();
-	let bytes = string_lower.as_bytes();
-
-	let mut decimal_values = vec!();
-	let mut tick = 1;
-	let mut current_byte = 0;
-
-	for &x in bytes.iter() {
-		current_byte += convert_hex_char_to_decimal(x) * 16u8.pow(tick);
-		tick = tick ^ 1;
-		if tick == 1 {
-			decimal_values.push(current_byte);
-			current_byte = 0;
-		}
-	}
-
-	decimal_values
-}
-
-fn convert_hex_char_to_decimal(character: u8) -> u8 {
-	// if x is in the ascii range for numbers, subtract 48,
-	// which is '0' in ascii. Otherwise, it should be a lowercase letter.
-	// 'a' is 97, so subtract 87.
-	match character < 58 {
-		true => character - 48,
-		false => character - 87
-	}
 }
 
 // these are strings so that they can be used in StrExt.replace.

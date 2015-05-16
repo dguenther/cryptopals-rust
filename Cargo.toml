@@ -8,6 +8,10 @@ authors = ["Derek Guenther <dguenther9@gmail.com>"]
 log = "0.3.1"
 openssl = "0.6.2"
 
+[lib]
+name = "cryptopalslib"
+path = "src/cryptopalslib/lib.rs"
+
 [[bin]]
 name = "1-1"
 path = "src/set1/1.rs"
