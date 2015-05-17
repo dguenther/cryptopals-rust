@@ -1,6 +1,21 @@
 use std::ascii::AsciiExt;
 use std::str;
 
+/// Given a string containing hexadecimal digits, returns a string containing
+/// the Base64 representation of those hex digits.
+///
+/// # Panics
+///
+/// Panics when given a hex string of odd length.
+/// Panics when the resulting bytes can't be converted to a string.
+///
+/// # Examples
+///
+/// ```
+/// let hex = "4D616E";
+/// let base64 = cryptopalslib::convert::hex_to_base64(hex);
+/// assert_eq!(base64, "TWFu");
+/// ```
 pub fn hex_to_base64(hex_string: &str) -> String {
 	if hex_string.len() % 2 != 0 {
 		panic!("Hex string length should be even.");
@@ -57,6 +72,21 @@ pub fn hex_to_base64(hex_string: &str) -> String {
 	}
 }
 
+/// Given a string containing Base64-encoded data, returns a string containing
+/// the hexadecimal representation of that data.
+///
+/// # Panics
+///
+/// Panics when the resulting bytes can't be converted to a string.
+/// Panics when given a string ending with more than two equals signs.
+///
+/// # Examples
+///
+/// ```
+/// let base64 = "TWFu";
+/// let hex = cryptopalslib::convert::base64_to_hex(base64);
+/// assert_eq!(hex, "4d616e");
+/// ```
 pub fn base64_to_hex(input: &str) -> String {
 	let bytes = input.as_bytes();
 	let mut nums = vec!();
@@ -106,6 +136,23 @@ pub fn base64_to_hex(input: &str) -> String {
 
 }
 
+/// Converts a vector of Base64-encoded strings into a single string of
+/// hexadecimal digits.
+///
+/// Useful when converting a file containing Base64 data with newlines in it.
+///
+/// # Panics
+///
+/// Panics when the resulting bytes can't be converted to a string.
+/// Panics when given a string ending with more than two equals signs.
+///
+/// # Examples
+///
+/// ```
+/// let base64 = vec!("TWFu".to_string(), "TWFu".to_string());
+/// let hex = cryptopalslib::convert::base64_lines_to_hex(&base64);
+/// println!("{}", hex);
+/// ```
 pub fn base64_lines_to_hex(lines: &Vec<String>) -> String {
 	let mut output = String::new();
 	for line in lines {
@@ -114,6 +161,14 @@ pub fn base64_lines_to_hex(lines: &Vec<String>) -> String {
 	output
 }
 
+/// Converts a Base64 ASCII character to the value it represents.
+///
+/// For example, when given 65, representing "A", returns 0.
+/// Returns None when given 61 (which represents an equals sign in ASCII).
+///
+/// # Panics
+///
+/// Panics when given an ASCII character that isn't in the Base64 range.
 fn base64_ascii_to_index(ascii: u8) -> Option<u8> {
 	match ascii {
 		65...90 => Some(ascii - 65), // uppercase
@@ -122,14 +177,26 @@ fn base64_ascii_to_index(ascii: u8) -> Option<u8> {
 		43 => Some(ascii + 19), // +
 		47 => Some(ascii + 16), // /
 		// equals means empty byte. need some way of
-		// differentiating from 'A'.
+		// differentiating from 'A', so we'll use the Option type
 		61 => None, // =
 
 		_ => panic!("Not in base64 range")
 	}
 }
 
-pub fn hex_string_to_decimal_pairs(string: &String) -> Vec<u8> {
+/// Converts a string of hex digits into a vector of 8-bit integers
+/// representing characters.
+///
+/// Every two hex digits will be converted to one 8-bit integer.
+///
+/// # Examples
+///
+/// ```
+/// let hex = "4D616E";
+/// let nums = cryptopalslib::convert::hex_string_to_decimal_pairs(hex);
+/// assert_eq!(nums, vec!(77, 97, 110));
+/// ```
+pub fn hex_string_to_decimal_pairs(string: &str) -> Vec<u8> {
 	let string_lower = string.to_ascii_lowercase();
 	let bytes = string_lower.as_bytes();
 
@@ -149,6 +216,17 @@ pub fn hex_string_to_decimal_pairs(string: &String) -> Vec<u8> {
 	decimal_values
 }
 
+/// Converts a vector of 8-bit integers into a string containing hex digits.
+///
+/// Every 8-bit integer will be split into two hex digits.
+///
+/// # Examples
+///
+/// ```
+/// let nums = vec!(77, 97, 110);
+/// let hex = cryptopalslib::convert::decimals_to_hex_string(nums);
+/// assert_eq!(hex, "4d616e");
+/// ```
 pub fn decimals_to_hex_string(decimals: Vec<u8>) -> String {
 	let mut converted_string: Vec<u8> = vec!();
 	for num in decimals {
@@ -170,6 +248,15 @@ pub fn decimals_to_hex_string(decimals: Vec<u8>) -> String {
 	}
 }
 
+/// Converts the ASCII representation of a hexadecimal character into the
+/// number it represents.
+///
+/// # Examples
+/// ```
+/// let hex = 48;
+/// let decimal = cryptopalslib::convert::hex_char_to_decimal(hex);
+/// assert_eq!(0, decimal);
+/// ```
 pub fn hex_char_to_decimal(character: u8) -> u8 {
 	// if x is in the ascii range for numbers, subtract 48,
 	// which is '0' in ascii. Otherwise, it should be a lowercase letter.
@@ -180,6 +267,18 @@ pub fn hex_char_to_decimal(character: u8) -> u8 {
 	}
 }
 
+/// Converts a number from 0-16 to an ASCII-encoded hex character.
+///
+/// # Panics
+///
+/// Panics if the number given isn't in the range 0-16.
+///
+/// # Examples
+/// ```
+/// let num = 0;
+/// let hex = cryptopalslib::convert::decimal_to_hex_char(num);
+/// assert_eq!(48, hex);
+/// ```
 pub fn decimal_to_hex_char(decimal: u8) -> u8 {
 	match decimal {
 		0...9 => decimal + 48,
@@ -188,6 +287,7 @@ pub fn decimal_to_hex_char(decimal: u8) -> u8 {
 	}
 }
 
+/// Converts a 24-bit number into a vector of 4 base64-indexed values.
 fn convert_string_group(group: usize, significant_bytes: usize) -> Vec<u8> {
 	let mut converted_vec = vec!();
 	let octets = vec!(
