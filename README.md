@@ -1,4 +1,4 @@
-cryptopals-rust
+cryptopals-rust [![Build Status](https://travis-ci.org/dguenther/cryptopals-rust.svg)](https://travis-ci.org/dguenther/cryptopals-rust)
 ===============
 
 Very rough solutions for the [Cryptopals](http://cryptopals.com) series of crypto challenges. I've only completed the first set so far.
