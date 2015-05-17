@@ -1,6 +1,18 @@
 
 use std::str;
 
+/// Xors a string with values 0-255, scoring each xored string using
+/// the score::score_text function and returning the best result.
+///
+/// Returns the best string's score, the value xored to get the best
+/// string, and the best string itself.
+///
+/// # Examples
+/// ```
+/// let nums = vec!(77, 97, 110);
+/// let (score, value, best_string) = cryptopalslib::xor::score_and_xor(nums);
+/// println!("{} {} {}", score, value, best_string);
+/// ```
 pub fn score_and_xor(decimal_values: Vec<u8>) -> (usize, u8, String) {
     let mut best_string = String::new();
     let mut best_string_score = 0;
