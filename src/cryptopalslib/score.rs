@@ -1,6 +1,5 @@
 
 use std::ascii::AsciiExt;
-use std::collections::BitVec;
 
 /// Computes the hamming distance between two integer arrays.
 ///
@@ -19,8 +18,8 @@ pub fn hamming_distance(input1: &[u8], input2: &[u8]) -> usize {
     let mut output: usize = 0;
 
     for (x, y) in first_iter.zip(second_iter) {
-        let bv = BitVec::from_bytes(&[x^y]);
-        output += bv.iter().filter(|x| *x).count() as usize;
+        let xor = x ^ y;
+        output += xor.count_ones() as usize;
     }
     output
 }

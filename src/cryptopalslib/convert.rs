@@ -46,7 +46,11 @@ pub fn hex_to_base64(hex_string: &str) -> String {
         shift -= 4;
 
         if shift < 0 {
-            output_vec.append(&mut convert_string_group(string_group, 3));
+            // TODO: Replace with append once collections settles
+            let base64_values = convert_string_group(string_group, 3);
+            for &value in base64_values.iter() {
+                output_vec.push(value);
+            }
             shift = 20;
             string_group = 0;
         }
@@ -57,7 +61,11 @@ pub fn hex_to_base64(hex_string: &str) -> String {
         // assuming an even number of hex chars, shift will either be 12 or 4.
         // if 12, we have 1 significant byte, and if 4 we have 2.
         let significant_bytes: usize = (2 - (shift / 8)) as usize;
-        output_vec.append(&mut convert_string_group(string_group, significant_bytes));
+        // TODO: Replace with append once collections settles
+        let base64_values = convert_string_group(string_group, significant_bytes);
+        for &value in base64_values.iter() {
+            output_vec.push(value);
+        }
     }
 
     // turn the byte vector into a string
@@ -90,7 +98,9 @@ pub fn hex_to_base64(hex_string: &str) -> String {
 pub fn base64_to_hex(input: &str) -> String {
     let bytes = input.as_bytes();
     let mut nums = vec!();
-    for index in (0..bytes.len()).step_by(4) {
+    let mut index = 0;
+    // TODO: Replace with step_by once it settles
+    while index < bytes.len() {
         let slice = &bytes[index..index+4];
 
         let byte0 = base64_ascii_to_index(slice[0]);
@@ -120,6 +130,7 @@ pub fn base64_to_hex(input: &str) -> String {
             _ => panic!("Only the last two bytes may be unused")
         };
 
+        index += 4;
     }
 
     let hex: Vec<u8> = nums.iter().map(|&x| decimal_to_hex_char(x)).collect();
@@ -315,7 +326,10 @@ fn convert_string_group(group: usize, significant_bytes: usize) -> Vec<u8> {
     // and replace them with '=' characters
     if significant_bytes < 3 {
         converted_vec.truncate(significant_bytes + 1);
-        converted_vec.resize(4, 61);
+        // TODO: Replace with resize once it settles
+        while converted_vec.len() < 4 {
+            converted_vec.push(61);
+        }
     }
 
     converted_vec
